@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="../img/JoinLogoDark.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/interFont.css">
+    <link rel="stylesheet" href="../css/add-task.css">
+    <link rel="stylesheet" href="../css/board.css">
+    <title>Board</title>
+    <script src="../scripts/generalFunctions.js"></script>
+    <script src="../scripts/add-task.js"></script>
+    <script src="../scripts/board-helper.js"></script>
+    <script src="../scripts/board.js"></script>
+</head>
+
+<body onload="init(); return false">
+    <div id="sidebar">
+        <div w3-include-html="./sidebar.html"></div>
+    </div>
+    <div id="line" w3-include-html="./header.html"></div>
+    <div class="content" id="content">
+        <div class="headline">
+            <span class="responsiveHeadline">
+                <h1>Board</h1>
+                <div class="plusForResponsive"><img onclick="togglePopUpTask('flex')" src="../img/board-img/addplus.png">
+                </div>
+            </span>
+            <span class="inputAndButtonHeadline">
+                <div class="inputDiv">
+                    <input id="input" oninput="searchTask()" placeholder="Find Task">
+                    <img src="../img/board-img/lupe.png">
+                </div>
+                <div class="buttonAdd" onclick="togglePopUpTask('flex')">Add task
+                    <img src="../img/board-img/addplus.png">
+                </div>
+
+            </span>
+        </div>
+
+        <div class="taskContent">
+            <div class="taskContainer" ondrop="dragToOtherCategory('taskCategoryToDo')" ondragover="allowDrop(event); highlight('taskCategoryToDo')" ondragleave="removeHighlight('taskCategoryToDo')" >
+                <div class="taskCategoryName">
+                    <h3> To do</h3><span class="hoverPlusEffect" onclick="togglePopUpTask('flex')" ><img src="../img/board-img/plusButtonTasks.png"></span>
+                </div>
+                <div id="taskCategoryToDo"></div>
+            </div>
+
+            <div class="taskContainer" ondrop="dragToOtherCategory('taskCategoryInProgress')"
+             ondragover="allowDrop(event); highlight('taskCategoryInProgress')" ondragleave="removeHighlight('taskCategoryInProgress')">
+                <div class="taskCategoryName">
+                    <h3> In progress</h3><span class="hoverPlusEffect" onclick="togglePopUpTask('flex')" ><img
+                            src="../img/board-img/plusButtonTasks.png"></span>
+                </div>
+                <div id="taskCategoryInProgress"></div>
+            </div>
+
+            <div class="taskContainer" ondrop="dragToOtherCategory('taskCategoryAwaitFeedback')"
+            ondragover="allowDrop(event); highlight('taskCategoryAwaitFeedback')" ondragleave="removeHighlight('taskCategoryAwaitFeedback')">
+                <div class="taskCategoryName">
+                    <h3>Await feedback</h3><span class="hoverPlusEffect" onclick="togglePopUpTask('flex')" ><img
+                            src="../img/board-img/plusButtonTasks.png"></span>
+                </div>
+                <div id="taskCategoryAwaitFeedback"></div>
+            </div>
+
+            <div class="taskContainer" ondrop="dragToOtherCategory('taskCategoryDone')" ondragover="allowDrop(event); highlight('taskCategoryDone')" ondragleave="removeHighlight('taskCategoryDone')">
+                <div class="taskCategoryName">
+                    <h3>Done</h3><span class="hoverPlusEffect" onclick="togglePopUpTask('flex')" ><img src="../img/board-img/plusButtonTasks.png"></span>
+                </div>
+                <div id="taskCategoryDone"></div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="editTaskPopUpWindowContent" onclick="closeEditTaskPopUp()"></div>
+
+    <div id="editSelectedTask"></div>
+    <div id="addTaskPopUpWindowContent">
+        <div class="popUpWindow">
+            <h1>Add Task</h1>
+            <form class="addTaskElementsPopUpWindow" onclick="hideAssignedToDropMenu()" onsubmit="createNEWTASK(); return false">
+                <span class="leftElementAddTaskPopUpWindow">
+                    <div class="title">
+                        <h3 class="titles">Title</h3>
+                        <input id="title" type="text" class="input" required placeholder="Enter a title">
+                    </div>
+                    <div>
+                        <h3 class="titles">Description</h3>
+                        <textarea placeholder="Description of the task" required id="description"
+                            class="description"></textarea>
+                    </div>
+                    <div>
+                        <h3 class="titles">Assigned to</h3>
+                        <div class="selectionAssignedTo" id="assignedToSelection">
+                            <div onclick="openAssignedToSelection()">
+                                <p>Select contacts to assign</p><img src="../img/addtask-img/arrow_drop_down.png">
+                            </div>
+                        </div>
+                          <div class="createdTaskAssignedMember" id="assginedMembersCreateTask"></div> 
+                        <div class="formError d-none" id="errorAssigned">Please, select atleast "Myself"</div>
+                    </div>
+                </span>
+
+                <span class="rightElemenAddTaskPopUpWindow">
+                    <div>
+                        <h3>Due Date</h3>
+                        <div class="calender">
+                            <input type="date" required id="date" placeholder="tt.mm.yyyy">
+                        </div>
+                    </div>
+                    <div>
+                        <h3>Prio</h3>
+                        <div class="priorities" id="priorities">
+                            <span id="selecturgent" onclick="highlightPriority('urgent')">
+                                <p>Urgent</p><img src="../img/addtask-img/higPrio.png">
+                            </span>
+                            <span id="selectmedium" onclick="highlightPriority('medium')">
+                                <p>Medium</p><img src="../img/addtask-img/mediumPrio.png">
+                            </span>
+                            <span id="selectlow" onclick="highlightPriority('low')">
+                                <p>Low</p><img src="../img/addtask-img/lowPrio.png">
+                            </span>
+                        </div>
+                        <div class="formError d-none" id="errorPriority">What is the priority of the task?</div>
+                    </div>
+                    <div>
+                        <h3 class="titles">Category</h3>
+                        <div class="category" id="categorySelection" onclick="openCategorySelection()">
+                            <div>
+                                <p>Select task category</p><img src="../img/addtask-img/arrow_drop_down.png">
+                            </div>
+                        </div>
+                        <div id="colorSelection">
+                            <div id="color1" onclick="selectColor('FF7A00', 1)"
+                                style="background-color: #FF7A00; cursor: pointer;"></div>
+                            <div id="color2" onclick="selectColor('FC71FF', 2)"
+                                style="background-color: #FC71FF; cursor: pointer;"></div>
+                            <div id="color3" onclick="selectColor('1FD7C1', 3)"
+                                style="background-color: #1FD7C1; cursor: pointer;"></div>
+                            <div id="color4" onclick="selectColor('FFC701', 4)"
+                                style="background-color: #FFC701; cursor: pointer;"></div>
+                            <div id="color5" onclick="selectColor('FFC701', 5)"
+                                style="background-color: #0038FF; cursor: pointer;"></div>
+                            <div id="color6" onclick="selectColor('068f43', 6)"
+                                style="background-color: #068f43; cursor: pointer;"></div>
+                        </div>
+                        <div class="formError d-none" id="errorCategory">You have to select a category. You can also
+                            create a new one with "New category".</div>
+                    </div>
+                    <div>
+                        <h3>Subtask</h3>
+                        <div class="addNewSubtask">
+                            <input id="subtask" placeholder="Add new subtask"><img onclick="createSubtask()"
+                                src="../img/addtask-img/plus.png" style="cursor:pointer">
+                        </div>
+                        <div id="newCreatedSubtasks"></div>
+                    </div>
+                    <div class="clearAndCreateButtonPopUp">
+                        <div>
+                            <div class="clearButton" onclick="cancelCreateTask(); togglePopUpTask('none')">Cancel<img
+                                    src="../img/cancelIcon.png"></div>
+                        </div>
+                        <div>
+                            <button class="createButton" type="submit">Create Task</p><img
+                                    src="../img/createAccIcon.png"></button>
+                        </div>
+                    </div>
+                </span>
+            </form>
+        </div>
+    </div>
+     <div id="taskCreated"><img src="../img/board-img/addedToBoard.png"></div>
+    
+</body>
+
+</html>
