@@ -216,6 +216,7 @@ async function getUserBackend() {
     const formattedData = data.map((user) => ({
       email: user.email,
       username: user.username,
+      id: user.id
     }));
     usersBackend.push(formattedData);
     return data;

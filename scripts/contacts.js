@@ -1,8 +1,20 @@
-let madeSmall;//madeSmall= true, when we went from fullscreen to smallscreen, false, when we went from smallcreen to fullscreen
+let madeSmall; //madeSmall= true, when we went from fullscreen to smallscreen, false, when we went from smallcreen to fullscreen
 let actualContact;
 let detailDialog = false;
-let colorsIcon = ['#FF7A00', '#9327FF', '#29ABE2', '#FC71FF', '#02CF2F', '#AF1616', '#462F8A', '#FFC700', '#0223cf'];
+let colorsIcon = [
+  "#FF7A00",
+  "#9327FF",
+  "#29ABE2",
+  "#FC71FF",
+  "#02CF2F",
+  "#AF1616",
+  "#462F8A",
+  "#FFC700",
+  "#0223cf",
+];
 contacts;
+
+contactsBackend = [];
 
 setMadeSmall();
 window.addEventListener("resize", resizeListenerContacts);
@@ -13,7 +25,9 @@ window.addEventListener("resize", resizeListenerContacts);
 function setMadeSmall() {
   if (window.innerWidth <= 800) {
     madeSmall = true;
-  } else { madeSmall = false; }
+  } else {
+    madeSmall = false;
+  }
 }
 
 /**
@@ -22,14 +36,14 @@ function setMadeSmall() {
 function resizeListenerContacts() {
   if (window.innerWidth <= 800 && !madeSmall) {
     madeSmall = true;
-    document.getElementById('contactsContainer').style.display = 'none';
+    document.getElementById("contactsContainer").style.display = "none";
   }
   if (window.innerWidth > 800 && madeSmall) {
     madeSmall = false;
     if (detailDialog) {
       responsiveContactDetailsBackButton();
     } else {
-      document.getElementById('contactsContainer').style.display = 'block';
+      document.getElementById("contactsContainer").style.display = "block";
     }
   }
 }
@@ -40,52 +54,32 @@ function resizeListenerContacts() {
 
 async function loadContacts() {
   try {
-    const response = await getItem('contacts');
+    const response = await getItem("contacts");
     if (response && response.data && response.data.value) {
-      contacts = JSON.parse(response.data.value).sort((a, b) => a.name.localeCompare(b.name));
+      contacts = JSON.parse(response.data.value).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
     } else {
       contacts = []; // Fallback, wenn die Server-Antwort kein gültiges JSON enthält
     }
   } catch (error) {
-    console.error('Error loading contacts:', error);
+    console.error("Error loading contacts:", error);
     contacts = []; // Fallback, wenn ein Fehler beim Laden der Kontakte auftritt
   }
 }
 
 /**
- * Is an onload function. It will render every contact, from the server. And will only stop when 
- * the length from contacts(array) is reached. It will also create the seperator and letters and sort it 
- * alphabetical. LettersHtml and contactListHtml is a created function only for returning the HTML part.
- */
-async function renderContacts() {
-  await loadContacts();
-  let containerContactlist = document.getElementById('contactList');
-  containerContactlist.innerHTML = "";
-  for (let i = 0; i < contacts.length; i++) {
-    let contact = contacts[i];
-    let currentLetter = contact['name'].charAt(0).toUpperCase();
-    let prevLetter = i > 0 ? contacts[i - 1]['name'].charAt(0).toUpperCase() : null;
-    if (currentLetter !== prevLetter) {
-      containerContactlist.innerHTML += lettersHtml(currentLetter);
-      generatedLetters.push(currentLetter);
-    }
-    containerContactlist.innerHTML += contactListHtml(contact, i);
-  }
-  addNameToHref();
-}
-
-/**
- * First it will get the value from the inputfields. After that it will split the first letter from the first- and 
+ * First it will get the value from the inputfields. After that it will split the first letter from the first- and
  * secondname. After that it will create the short-Icon. Max Mustermann -> MM . After that it will push everything
  * in the current place from the contacts-array and save so the changes.
  */
 async function saveContactChanges(i) {
-  let name = document.getElementById('changeName').value;
-  let email = document.getElementById('changeEmail').value;
-  let phone = document.getElementById('changePhone').value;
-  
+  let name = document.getElementById("changeName").value;
+  let email = document.getElementById("changeEmail").value;
+  let phone = document.getElementById("changePhone").value;
+
   if (name.length <= 2) {
-    alert('Please add a Name');
+    alert("Please add a Name");
   } else {
     const { firstName, lastName, short } = calculateNameDetails(name);
 
@@ -93,19 +87,21 @@ async function saveContactChanges(i) {
     contacts[i].email = email;
     contacts[i].phone = phone;
     contacts[i].short = short;
-    
-    await setItem('contacts', JSON.stringify(contacts));
-  
-    let newContact = document.getElementById('newContact');
-    newContact.classList.add('d-none');
+
+    await setItem("contacts", JSON.stringify(contacts));
+
+    let newContact = document.getElementById("newContact");
+    newContact.classList.add("d-none");
     showContactDetails(i);
     renderContacts();
   }
 }
 
 function calculateNameDetails(name) {
-  const [firstName, lastName] = name.trim().split(' ');
-  const short = (firstName ? firstName.charAt(0) : '') + (lastName ? lastName.charAt(0) : '');
+  const [firstName, lastName] = name.trim().split(" ");
+  const short =
+    (firstName ? firstName.charAt(0) : "") +
+    (lastName ? lastName.charAt(0) : "");
   return { firstName, lastName, short };
 }
 
@@ -114,61 +110,32 @@ function calculateNameDetails(name) {
  */
 async function deleteContact(i) {
   contacts.splice(i, 1);
-  await setItem('contacts', JSON.stringify(contacts));
+  await setItem("contacts", JSON.stringify(contacts));
   await updateClasses();
   checkSizeForContactContainer();
-}  
+}
 
-async function updateClasses(){
-  let newContact = document.getElementById('newContact');
-  newContact.classList.add('d-none');
-  document.getElementById('resetName').innerHTML = "";
-  document.getElementById('resetInfo').innerHTML = "";
-  document.getElementById('resetEmailPhone').innerHTML = "";
+async function updateClasses() {
+  let newContact = document.getElementById("newContact");
+  newContact.classList.add("d-none");
+  document.getElementById("resetName").innerHTML = "";
+  document.getElementById("resetInfo").innerHTML = "";
+  document.getElementById("resetEmailPhone").innerHTML = "";
   await renderContacts();
-  document.getElementById('contactList').classList.remove('d-none');
-  document.getElementById('responsiveButton').classList.remove('d-none');
-  document.getElementById('responsiveHeadlinePhrase').classList.add('d-none');
-  document.getElementById('responsiveDelete').classList.add('d-none');
-  document.getElementById('responsiveEdit').classList.add('d-none');
-  document.getElementById('backArrowResponsive').classList.add('d-none')
+  document.getElementById("contactList").classList.remove("d-none");
+  document.getElementById("responsiveButton").classList.remove("d-none");
+  document.getElementById("responsiveHeadlinePhrase").classList.add("d-none");
+  document.getElementById("responsiveDelete").classList.add("d-none");
+  document.getElementById("responsiveEdit").classList.add("d-none");
+  document.getElementById("backArrowResponsive").classList.add("d-none");
 }
 
-function checkSizeForContactContainer(){
- if(window.innerWidth <= 800){
-  document.getElementById('contactsContainer').style.display = 'none';
- }else{
-  document.getElementById('contactsContainer').style.display = 'unset';
- }
-}
-
-/**
- * First it checks the validity from the inputfields, after that it will save the created contact in contacts
- * and push it into the remote server.
- */
-async function newContact() {
-  let name = document.getElementById('newName').value;
-  let email = document.getElementById('newEmail').value;
-  let phone = document.getElementById('newPhone').value;
-  let form = document.querySelector('form');
-  let iconColor = colorsIcon[(contacts.length) % 9];
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
+function checkSizeForContactContainer() {
+  if (window.innerWidth <= 800) {
+    document.getElementById("contactsContainer").style.display = "none";
+  } else {
+    document.getElementById("contactsContainer").style.display = "unset";
   }
-  const { firstName, lastName, short } = calculateNameDetails(name);
-  let contact = {
-    name,
-    email,
-    phone,
-    short,
-    iconColor,
-  };
-  contacts.push(contact);
-  await setItem('contacts', JSON.stringify(contacts));
-  let newContact = document.getElementById('newContact');
-  newContact.classList.add('d-none');
-  renderContacts();
 }
 
 /**
@@ -176,7 +143,7 @@ async function newContact() {
  */
 function showContactDetails(i) {
   actualContact = i;
-  let container = document.getElementById('contactDetails');
+  let container = document.getElementById("contactDetails");
   let contact = contacts[i];
   container.innerHTML = "";
   if (window.innerWidth >= 800) {
@@ -188,14 +155,16 @@ function showContactDetails(i) {
   }
 }
 
-function updateShowContactDetailsClasses(){
-  document.getElementById('contactList').classList.add('d-none');
-  document.getElementById('responsiveButton').classList.add('d-none');
-  document.getElementById('responsiveHeadlinePhrase').classList.remove('d-none');
-  document.getElementById('responsiveDelete').classList.remove('d-none');
-  document.getElementById('responsiveEdit').classList.remove('d-none');
-  document.getElementById('backArrowResponsive').classList.remove('d-none')
-  document.getElementById('contactsContainer').style.display = 'block';
+function updateShowContactDetailsClasses() {
+  document.getElementById("contactList").classList.add("d-none");
+  document.getElementById("responsiveButton").classList.add("d-none");
+  document
+    .getElementById("responsiveHeadlinePhrase")
+    .classList.remove("d-none");
+  document.getElementById("responsiveDelete").classList.remove("d-none");
+  document.getElementById("responsiveEdit").classList.remove("d-none");
+  document.getElementById("backArrowResponsive").classList.remove("d-none");
+  document.getElementById("contactsContainer").style.display = "block";
 }
 
 /**
@@ -203,21 +172,23 @@ function updateShowContactDetailsClasses(){
  */
 function responsiveContactDetailsBackButton() {
   detailDialog = false;
-  document.getElementById('contactList').classList.remove('d-none');
-  document.getElementById('responsiveButton').classList.remove('d-none');
-  document.getElementById('responsiveHeadlinePhrase').classList.add('d-none');
-  document.getElementById('responsiveDelete').classList.add('d-none');
-  document.getElementById('responsiveEdit').classList.add('d-none');
-  document.getElementById('backArrowResponsive').classList.add('d-none')
-  if (window.innerWidth <= 800) { document.getElementById('contactsContainer').style.display = 'none'; }
+  document.getElementById("contactList").classList.remove("d-none");
+  document.getElementById("responsiveButton").classList.remove("d-none");
+  document.getElementById("responsiveHeadlinePhrase").classList.add("d-none");
+  document.getElementById("responsiveDelete").classList.add("d-none");
+  document.getElementById("responsiveEdit").classList.add("d-none");
+  document.getElementById("backArrowResponsive").classList.add("d-none");
+  if (window.innerWidth <= 800) {
+    document.getElementById("contactsContainer").style.display = "none";
+  }
 }
 
 /**
  * Show the pop-up window for new contact.
  */
 function showPopUpWindowNewContact() {
-  let newContact = document.getElementById('newContact');
-  newContact.classList.remove('d-none');
+  let newContact = document.getElementById("newContact");
+  newContact.classList.remove("d-none");
   newContact.innerHTML = newContactPopUpHtml();
 }
 
@@ -225,15 +196,15 @@ function showPopUpWindowNewContact() {
  * close the pop-up window for new contact.
  */
 function closePopUpWindow() {
-  document.getElementById('newContact').classList.add('d-none');
+  document.getElementById("newContact").classList.add("d-none");
 }
 
 /**
  * Show the pop-up window for edit contact.
  */
 function editContact(i) {
-  let newContact = document.getElementById('newContact');
-  newContact.classList.remove('d-none');
+  let newContact = document.getElementById("newContact");
+  newContact.classList.remove("d-none");
   newContact.innerHTML = editContactHtml(i);
 }
 
@@ -241,18 +212,127 @@ function editContact(i) {
  * Only show the new contact button for responsive side, when the window is smaller than 800px
  */
 async function buttonVisibility() {
-  let button = document.getElementById('responsiveButton');
+  let button = document.getElementById("responsiveButton");
   if (window.innerWidth < 800) {
-    button.classList.remove('d-none');
+    button.classList.remove("d-none");
     await renderContacts();
   } else {
-    button.classList.add('d-none');
+    button.classList.add("d-none");
   }
 }
 
-window.addEventListener('resize', function (event) {
+window.addEventListener("resize", function (event) {
   buttonVisibility();
 });
+
+
+
+/**
+ * Is an onload function. It will render every contact, from the server. And will only stop when
+ * the length from contacts(array) is reached. It will also create the seperator and letters and sort it
+ * alphabetical. LettersHtml and contactListHtml is a created function only for returning the HTML part.
+ */
+async function renderContacts() {
+  await getContactsBackend();
+  let containerContactlist = document.getElementById("contactList");
+  containerContactlist.innerHTML = "";
+  for (let i = 0; i < contactsBackend[0].length; i++) {
+    let contact = contactsBackend[0][i];
+    let currentLetter = contact["name"].charAt(0).toUpperCase();
+    let prevLetter =
+      i > 0 ? contactsBackend[0][i - 1]["name"].charAt(0).toUpperCase() : null;
+    if (currentLetter !== prevLetter) {
+      containerContactlist.innerHTML += lettersHtml(currentLetter);
+      generatedLetters.push(currentLetter);
+    }
+    containerContactlist.innerHTML += contactListHtml(contact, i);
+  }
+  addNameToHref();
+}
+
+/**
+ * First it checks the validity from the inputfields, after that it will save the created contact in contacts
+ * and push it into the remote server.
+ */
+async function newContact() {
+
+  let name = document.getElementById("newName").value;
+  let email = document.getElementById("newEmail").value;
+  let phone = document.getElementById("newPhone").value;
+  let iconColor = colorsIcon[contactsBackend[0].length % 9];
+  let author = getNameFromURL()
+  const { firstName, lastName, short } = calculateNameDetails(name);
+  let contact = {
+    name,
+    email,
+    phone,
+    short,
+    iconColor,
+    author
+  };
+  contactsBackend[0].push(contact);
+  await setNewContactBackend(contact);
+  let newContact = document.getElementById("newContact");
+  newContact.classList.add("d-none");
+  renderContacts();
+}
+
+function getNameFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const name = urlParams.get('name');
+  return name;
+}
+
+
+//----Django-Backend-Functions----//
+
+async function getContactsBackend() {
+  const url = "http://127.0.0.1:8000/contacts/";
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await response.json();
+    const formattedData = data.map((contact) => ({
+      name: contact.name,
+      email: contact.email,
+      phonenumber: contact.phonenumber,
+      short: contact.short,
+      iconColor: contact.iconColor,
+      author: contact
+    }));
+    contactsBackend.push(formattedData);
+    return data;
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    throw error;
+  }
+}
+
+async function setNewContactBackend(contact) {
+  const url = "http://127.0.0.1:8000/contacts/";
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({contact}),
+    });
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+
+
+
+
+
+
 
 /*-------------------------------HTML-Templates-------------------------*/
 
@@ -262,28 +342,27 @@ function lettersHtml(currentLetter) {
   <span class="firstLetter">${currentLetter}</span>
 </div>
 <img src="../img/seperatorContacts.png">
-`
+`;
 }
 
 function contactListHtml(contact, i) {
   return `
     <div class="contactContainer" onclick="showContactDetails(${i})">
-      <div class="profile " style="background-color:${contact['iconColor']}">${contact['short']}</div>
+      <div class="profile " style="background-color:${contact["iconColor"]}">${contact["short"]}</div>
       <div class="contact">
-        <div class="name">${contact['name']}</div>
-        <a  class="email">${contact['email']}</a>
+        <div class="name">${contact["name"]}</div>
+        <a  class="email">${contact["email"]}</a>
       </div>
     </div>
-  `
+  `;
 }
-
 
 function showContactDetailsHtml(contact, i) {
   return `
 <div class="nameContainer" id="resetName">
-                      <div class="detailsProfile" style="background-color:${contacts[i]['iconColor']}">${contacts[i]['short']}</div>
+                      <div class="detailsProfile" style="background-color:${contacts[i]["iconColor"]}">${contacts[i]["short"]}</div>
                       <div class="detailsName">
-                          <h2>${contact['name']}</h2>
+                          <h2>${contact["name"]}</h2>
                           <div class="addTask">
                               <span>Add Task</span>
                           </a>
@@ -303,18 +382,18 @@ function showContactDetailsHtml(contact, i) {
                   <div class="emailPhone" id="resetEmailPhone">
                       <div class="contactEmail">
                           <span class="designation">Email</span>
-                          <a href="mailto:${contact['email']}" class="email">${contact['email']}</a>
+                          <a href="mailto:${contact["email"]}" class="email">${contact["email"]}</a>
                       </div>
                       <div class="contactPhone">
                           <span class="designation">Phone</span>
-                          <span>${contact['phone']}</span>
+                          <span>${contact["phone"]}</span>
                       </div>
                   </div>
 
                   <img  onclick="deleteContact(${i})" src="../img/deleteButtonResponsive.png" id="responsiveDelete" class="responsiveButtons respButtDel d-none">
                   <img onclick="editContact(${i})"src="../img/editButtonResponsive.png"  id="responsiveEdit" class="responsiveButtons respButtEdit d-none">
                   <img  onclick="responsiveContactDetailsBackButton()" src="../img/backArrowResponsive.png" id="backArrowResponsive" class="responsiveBackArrowButton d-none">
-              </div>`
+              </div>`;
 }
 
 function newContactPopUpHtml() {
@@ -347,7 +426,7 @@ function newContactPopUpHtml() {
   </div>
 </div>
 </div>
-`
+`;
 }
 
 function editContactHtml(i) {
@@ -361,13 +440,13 @@ function editContactHtml(i) {
     </div>
     <div class="rightSideNewContactContainer h450">
     
-        <span class="editContactAvatar " style="background-color:${contacts[i]['iconColor']}">${contacts[i]['short']}</span>
+        <span class="editContactAvatar " style="background-color:${contacts[i]["iconColor"]}">${contacts[i]["short"]}</span>
         <span class="mb-30 pt60">
         <div class="closeAddContactButton" onclick="closePopUpWindow()"><img class="" src="../img/cancelIcon.png"></div>
             <form>
-                <input required type="text" id="changeName" class="avatarIcon" placeholder="Name" value="${contacts[i]['name']}">
-                <input required type="email" id="changeEmail" class="emailIcon" placeholder="Email" value="${contacts[i]['email']}">
-                <input required type="tel" id="changePhone" class="phoneIcon" placeholder="Phone" value="${contacts[i]['phone']}" oninput="this.value = this.value.replace(/[^0-9/+]/g, '');">
+                <input required type="text" id="changeName" class="avatarIcon" placeholder="Name" value="${contacts[i]["name"]}">
+                <input required type="email" id="changeEmail" class="emailIcon" placeholder="Email" value="${contacts[i]["email"]}">
+                <input required type="tel" id="changePhone" class="phoneIcon" placeholder="Phone" value="${contacts[i]["phone"]}" oninput="this.value = this.value.replace(/[^0-9/+]/g, '');">
           
 
             </form>
@@ -379,22 +458,5 @@ function editContactHtml(i) {
     </div>
 </div>
 </div>
-`
+`;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
