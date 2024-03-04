@@ -15,6 +15,8 @@ let colorsIcon = [
 contacts;
 
 contactsBackend = [];
+usersBackend = [];
+
 
 setMadeSmall();
 window.addEventListener("resize", resizeListenerContacts);
@@ -82,14 +84,7 @@ async function saveContactChanges(i) {
     alert("Please add a Name");
   } else {
     const { firstName, lastName, short } = calculateNameDetails(name);
-
-    contacts[i].name = name;
-    contacts[i].email = email;
-    contacts[i].phone = phone;
-    contacts[i].short = short;
-
-    await setItem("contacts", JSON.stringify(contacts));
-
+    await updateContactBackend(name, email, phone, short)
     let newContact = document.getElementById("newContact");
     newContact.classList.add("d-none");
     showContactDetails(i);
@@ -144,7 +139,7 @@ function checkSizeForContactContainer() {
 function showContactDetails(i) {
   actualContact = i;
   let container = document.getElementById("contactDetails");
-  let contact = contacts[i];
+  let contact = contactsBackend[0][i];
   container.innerHTML = "";
   if (window.innerWidth >= 800) {
     container.innerHTML = showContactDetailsHtml(contact, i);
@@ -233,6 +228,7 @@ window.addEventListener("resize", function (event) {
  * alphabetical. LettersHtml and contactListHtml is a created function only for returning the HTML part.
  */
 async function renderContacts() {
+  await getUserBackend();
   await getContactsBackend();
   let containerContactlist = document.getElementById("contactList");
   containerContactlist.innerHTML = "";
@@ -260,7 +256,7 @@ async function newContact() {
   let email = document.getElementById("newEmail").value;
   let phone = document.getElementById("newPhone").value;
   let iconColor = colorsIcon[contactsBackend[0].length % 9];
-  let author = getNameFromURL()
+  let author = getIdUserFromURL()
   const { firstName, lastName, short } = calculateNameDetails(name);
   let contact = {
     name,
@@ -271,22 +267,53 @@ async function newContact() {
     author
   };
   contactsBackend[0].push(contact);
+  debugger
   await setNewContactBackend(contact);
   let newContact = document.getElementById("newContact");
   newContact.classList.add("d-none");
   renderContacts();
 }
 
-function getNameFromURL() {
+function getIdUserFromURL() {
+  IdUser = "";
   const urlParams = new URLSearchParams(window.location.search);
   const name = urlParams.get('name');
-  return name;
+  usersBackend[0].forEach(user => {
+    if (user['username'] == name) {
+      IdUser = user['id']
+    }
+  });
+  return IdUser
 }
 
 
 //----Django-Backend-Functions----//
 
+async function getUserBackend() {
+  const url = "http://127.0.0.1:8000/login/";
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await response.json();
+    const formattedData = data.map((user) => ({
+      email: user.email,
+      username: user.username,
+      id: user.id
+    }));
+    usersBackend.push(formattedData);
+    return data;
+  } catch (error) {
+    console.error("There was a problem with the fetch operation:", error);
+    throw error;
+  }
+}
+
 async function getContactsBackend() {
+  contactsBackend = [];
   const url = "http://127.0.0.1:8000/contacts/";
   try {
     const response = await fetch(url, {
@@ -320,7 +347,7 @@ async function setNewContactBackend(contact) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({contact}),
+      body: JSON.stringify(contact),
     });
   } catch (e) {
     console.log(e);
@@ -328,11 +355,39 @@ async function setNewContactBackend(contact) {
 }
 
 
+async function updateContactBackend(name, email, phone, short) {
+  debugger
+  let id = getIdContact(name)
+  const url = "http://127.0.0.1:8000/contacts/" + id;
+  try {
+    await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        "name": name,
+        "email": email,
+        "phonenumber": phone,
+        "short": short,
+    })
+    });
+  } catch (e) {
+    console.log(e)
+  }
+}
 
 
 
-
-
+function getIdContact(name) {
+  id = "";
+  contactsBackend[0].forEach(contact => {
+    if (contact['name'] == name) {
+      id = contact['author']['id']
+    }
+  });
+  return id
+}
 
 /*-------------------------------HTML-Templates-------------------------*/
 
@@ -360,7 +415,7 @@ function contactListHtml(contact, i) {
 function showContactDetailsHtml(contact, i) {
   return `
 <div class="nameContainer" id="resetName">
-                      <div class="detailsProfile" style="background-color:${contacts[i]["iconColor"]}">${contacts[i]["short"]}</div>
+                      <div class="detailsProfile" style="background-color:${contactsBackend[0][i]["iconColor"]}">${contactsBackend[0][i]["short"]}</div>
                       <div class="detailsName">
                           <h2>${contact["name"]}</h2>
                           <div class="addTask">
@@ -386,7 +441,7 @@ function showContactDetailsHtml(contact, i) {
                       </div>
                       <div class="contactPhone">
                           <span class="designation">Phone</span>
-                          <span>${contact["phone"]}</span>
+                          <span>${contact["phonenumber"]}</span>
                       </div>
                   </div>
 
@@ -440,13 +495,13 @@ function editContactHtml(i) {
     </div>
     <div class="rightSideNewContactContainer h450">
     
-        <span class="editContactAvatar " style="background-color:${contacts[i]["iconColor"]}">${contacts[i]["short"]}</span>
+        <span class="editContactAvatar " style="background-color:${contactsBackend[0][i]["iconColor"]}">${contactsBackend[0][i]["short"]}</span>
         <span class="mb-30 pt60">
         <div class="closeAddContactButton" onclick="closePopUpWindow()"><img class="" src="../img/cancelIcon.png"></div>
             <form>
-                <input required type="text" id="changeName" class="avatarIcon" placeholder="Name" value="${contacts[i]["name"]}">
-                <input required type="email" id="changeEmail" class="emailIcon" placeholder="Email" value="${contacts[i]["email"]}">
-                <input required type="tel" id="changePhone" class="phoneIcon" placeholder="Phone" value="${contacts[i]["phone"]}" oninput="this.value = this.value.replace(/[^0-9/+]/g, '');">
+                <input required type="text" id="changeName" class="avatarIcon" placeholder="Name" value="${contactsBackend[0][i]["name"]}">
+                <input required type="email" id="changeEmail" class="emailIcon" placeholder="Email" value="${contactsBackend[0][i]["email"]}">
+                <input required type="tel" id="changePhone" class="phoneIcon" placeholder="Phone" value="${contactsBackend[0][i]["phonenumber"]}" oninput="this.value = this.value.replace(/[^0-9/+]/g, '');">
           
 
             </form>
