@@ -12,8 +12,9 @@ let colorsIcon = [
   "#FFC700",
   "#0223cf",
 ];
-contacts;
 
+contacts;
+editContactName = "";
 contactsBackend = [];
 usersBackend = [];
 
@@ -89,6 +90,7 @@ async function saveContactChanges(i) {
     newContact.classList.add("d-none");
     showContactDetails(i);
     renderContacts();
+    location.reload();
   }
 }
 
@@ -198,6 +200,8 @@ function closePopUpWindow() {
  * Show the pop-up window for edit contact.
  */
 function editContact(i) {
+  editContactName = "";
+  editContactName = contactsBackend[0][i]['name']
   let newContact = document.getElementById("newContact");
   newContact.classList.remove("d-none");
   newContact.innerHTML = editContactHtml(i);
@@ -267,7 +271,6 @@ async function newContact() {
     author
   };
   contactsBackend[0].push(contact);
-  debugger
   await setNewContactBackend(contact);
   let newContact = document.getElementById("newContact");
   newContact.classList.add("d-none");
@@ -356,9 +359,8 @@ async function setNewContactBackend(contact) {
 
 
 async function updateContactBackend(name, email, phone, short) {
-  debugger
   let id = getIdContact(name)
-  const url = "http://127.0.0.1:8000/contacts/" + id;
+  const url = `http://127.0.0.1:8000/contacts/${id}/`;
   try {
     await fetch(url, {
       method: "PATCH",
@@ -370,7 +372,7 @@ async function updateContactBackend(name, email, phone, short) {
         "email": email,
         "phonenumber": phone,
         "short": short,
-    })
+      })
     });
   } catch (e) {
     console.log(e)
@@ -382,7 +384,7 @@ async function updateContactBackend(name, email, phone, short) {
 function getIdContact(name) {
   id = "";
   contactsBackend[0].forEach(contact => {
-    if (contact['name'] == name) {
+    if (contact['name'] == editContactName) {
       id = contact['author']['id']
     }
   });
