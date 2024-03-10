@@ -51,7 +51,6 @@ async function createNEWTASK() {
 
 async function createTaskAndClearEverything() {
     getCategoryColor();
-    debugger
     const task = getNewTaskJson();
     await createdTaskSuccesfull();
     tasks.push(task);

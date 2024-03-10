@@ -290,6 +290,7 @@ function getIdUserFromURL() {
 }
 
 
+
 //----Django-Backend-Functions----//
 
 async function getUserBackend() {
@@ -357,7 +358,6 @@ async function setNewContactBackend(contact) {
   }
 }
 
-
 async function updateContactBackend(name, email, phone, short) {
   let id = getIdContact(name)
   const url = `http://127.0.0.1:8000/contacts/${id}/`;
@@ -379,8 +379,6 @@ async function updateContactBackend(name, email, phone, short) {
   }
 }
 
-
-
 function getIdContact(name) {
   id = "";
   contactsBackend[0].forEach(contact => {
@@ -390,6 +388,10 @@ function getIdContact(name) {
   });
   return id
 }
+
+
+
+
 
 /*-------------------------------HTML-Templates-------------------------*/
 

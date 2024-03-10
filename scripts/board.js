@@ -10,6 +10,12 @@ let editAssignedToNamesShorts = {
 
 let hideDropDownMenu = true;
 
+let tasksBackend = [];
+let subtasksBackend = [];
+contactsBackend;
+usersBackend;
+
+
 async function init() {
 
     await loadContacts();
@@ -19,7 +25,11 @@ async function init() {
     await loadCategorys();
     await loadTasksForBoard();
     await renderTasks();
-    addNameToHref();
+    await addNameToHref();
+    await getUserBackend();
+    await getContactsBackend();
+    await getSubtasksBackend();
+    await getTasksBackend();
 }
 
 /**
@@ -192,7 +202,7 @@ function showNamesAndSubtasks(id) {
 function checkboxChanges() {
     let divId = document.getElementById('editAssignedToSelection');
     let labels = divId.querySelectorAll("label");
-    let editAssignedToNamesShorts = { names: [], colors: [],};
+    let editAssignedToNamesShorts = { names: [], colors: [], };
     for (let i = 0; i < labels.length; i++) {
         let selected = labels[i];
         if (selected.querySelector("input").checked) {
@@ -515,3 +525,95 @@ function doNotCloseWhenClickedInsightContainer(event) {
 
 
 
+//--------------------------------Django-Backend------------------//
+
+
+async function getSubtasksBackend() {
+    subtasksBackend = [];
+    const url = "http://127.0.0.1:8000/tasks/subtasks/";
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        const data = await response.json();
+        const formattedData = data.map((subtask) => ({
+            id: subtask.id,
+            titleFromSub: subtask.titleFromSub,
+            status: subtask.status
+        }));
+        subtasksBackend.push(formattedData)
+        return data;
+    } catch (error) {
+        console.error("There was a problem with the fetch operation:", error)
+    }
+}
+
+async function getTasksBackend() {
+    tasksBackend = [];
+    const url = "http://127.0.0.1:8000/tasks/";
+    try {
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        const data = await response.json();
+        const formattedData = data.map((task) => ({
+            category: task.category,
+            categoryColor: task.categoryColor,
+            description: task.description,
+            id: task.id,
+            assignedTo: task.assignedTo,
+            priority: task.priority,
+            section: task.section,
+            subtask: task.subtask,
+            title: task.title,
+            author: task.author
+        }));
+        tasksBackend.push(formattedData);
+        convertAssignedToIdsToStrings();
+        convertSubtaskIdToStrings();
+        return data;
+    } catch (error) {
+        console.error("There was a problem with the fetch operation:", error);
+    }
+}
+
+function convertAssignedToIdsToStrings() {
+    for (let i = 0; i < tasksBackend[0].length; i++) {
+        let assignedToArray = [];
+        tasksBackend[0][i]['assignedTo'].forEach(assignedTo => {
+            contactsBackend[0].forEach(contact => {
+                if (assignedTo == contact['author']['id']) {
+                    if (!assignedToArray.includes(contact['author']['name'])) {
+                        assignedToArray.push(contact['author']['name']);
+                    }
+                }
+            });
+        });
+        tasksBackend[0][i]['assignedTo'] = assignedToArray;
+    }
+}
+
+function convertSubtaskIdToStrings() {
+    for (let i = 0; i < tasksBackend[0].length; i++) {
+        let assignedToArray = [];
+        tasksBackend[0][i]['subtask'].forEach(assignedTo => {
+            subtasksBackend[0].forEach(subtask => {
+                if (assignedTo == subtask['id']) {
+                    if (!assignedToArray.includes(subtask['titleFromSub'])) {
+                        assignedToArray.push({
+                            titleFromSub: subtask['titleFromSub'],
+                            status: subtask['status']
+                        });
+                    }
+                }
+            });
+        });
+        tasksBackend[0][i]['subtask'] = assignedToArray;
+    }
+}
