@@ -13,6 +13,9 @@ let hideDropMenu = true;
 async function init() {
     setMinDate();
     includeHTML();
+
+    await getUserBackend();
+    await getContactsBackend();
     await loadContacts();
     await loadRemote();
     await loadCategorys();
@@ -32,18 +35,18 @@ async function createNEWTASK() {
         getTheAssignedNames();
         assignedTo = assignedToNames;
         formAssigned = true;
-     } else { formAssigned = false}
+    } else { formAssigned = false }
     if (prioIsSelected()) {
         priority = selectedPriority;
         formPrio = true;
-    } else { formPrio = false}
+    } else { formPrio = false }
     if (categoryIsSelected()) {
         category = document.getElementById('selectedCategory').innerHTML;
         formCategory = true;
-    } else { formCategory = false}
+    } else { formCategory = false }
     if (checkTheSelectedSubtasks()) {
         subtask = checkedSubtaskNames;
-    } 
+    }
     if (formAssigned && formPrio && formCategory) {
         createTaskAndClearEverything();
     }
@@ -51,10 +54,14 @@ async function createNEWTASK() {
 
 async function createTaskAndClearEverything() {
     getCategoryColor();
-    const task = getNewTaskJson();
+    const task = getNewTaskJsonBackend();
     await createdTaskSuccesfull();
+    await getIdForAssignedTo(task);
+    await getIdForUserFromURL(task);
     tasks.push(task);
-    await setTask('tasks', tasks);
+    await setNewTaskBackend(task);
+    debugger
+    //await setTask('tasks', tasks);
     clearValues();
     await init();
     cancelCreateTask();
@@ -65,7 +72,7 @@ async function createTaskAndClearEverything() {
     subTask = '';
 }
 
-function getNewTaskJson(){
+function getNewTaskJson() {
     return {
         title: title,
         description: description,
@@ -79,7 +86,7 @@ function getNewTaskJson(){
     }
 }
 
-function clearValues(){
+function clearValues() {
     generatedSubtasks = [];
     assignedToNames = [];
     checkedSubtaskNames = [];
@@ -358,7 +365,7 @@ function openAssignedToSelection() {
     let assignedToSelectionBox = document.getElementById('assignedToSelection');
     assignedToSelectionBox.innerHTML = assignedToBoxHTML();
     assignedToSelectionBox.innerHTML += `<label onclick="doNotCloseTheBoxOrReloadThePage(event)" id="assignedlabel" class="d-none" ><div id="assignedName0" >Myself</div><span><input id="checkboxAssignedTo0" type="checkbox"></span></label>`
-    contacts.forEach((contact, index) => {
+    contactsBackend[0].forEach((contact, index) => {
         assignedToSelectionBox.innerHTML += getContactsFromContactListHTML(contact, index);
     })
     toggleVisability();
@@ -379,7 +386,7 @@ function editGetContactsFromContactListHTML(contact, index) {
 function toggleVisability() {
     document.getElementById('assignedlabel').classList.toggle('d-none');
     document.getElementById('assginedMembersCreateTask').classList.toggle('d-none');
-    contacts.forEach((contact, index) => {
+    contactsBackend[0].forEach((contact, index) => {
         document.getElementById('assignedlabel' + index).classList.toggle('d-none');
     });
 }
@@ -391,7 +398,7 @@ function toggleVisability() {
 function checkboxChangesNewTask() {
     let divId = document.getElementById('assignedToSelection');
     let labels = divId.querySelectorAll("label");
-    let editAssignedToNamesShorts = { names: [], colors: [],};
+    let editAssignedToNamesShorts = { names: [], colors: [], };
     for (let i = 0; i < labels.length; i++) {
         let selected = labels[i];
         if (selected.querySelector("input").checked) {
@@ -422,7 +429,7 @@ function createArrayForIcons(selected, editAssignedToNamesShorts) {
     }
 }
 
-function renderNewTaskAssignedMembers(editAssignedToNamesShorts){
+function renderNewTaskAssignedMembers(editAssignedToNamesShorts) {
     document.getElementById('assginedMembersCreateTask').innerHTML = "";
     for (let a = 0; a < editAssignedToNamesShorts.names.length; a++) {
         document.getElementById('assginedMembersCreateTask').innerHTML += `<span class="memberIcon" style="background-color:${editAssignedToNamesShorts['colors'][a]}">${editAssignedToNamesShorts['names'][a]}</span> `;
@@ -446,7 +453,7 @@ function hideAssignedToDropMenu() {
     if (hideDropMenu) {
         document.getElementById('assignedlabel').classList.add('d-none');
         document.getElementById('assginedMembersCreateTask').classList.remove('d-none');
-        contacts.forEach((contact, index) => {
+        contactsBackend[0].forEach((contact, index) => {
             document.getElementById('assignedlabel' + index).classList.add('d-none');
         });
         checkboxChangesNewTask();
@@ -464,7 +471,8 @@ function cancelCreateTask() {
         const checkbox = document.getElementById('checkboxAssignedTo' + i);
         if (checkbox && checkbox.checked === true) {
             checkbox.checked = false;
-        }}
+        }
+    }
     if (selectedPriority) {
         let priority = 'select' + selectedPriority;
         document.getElementById(priority).classList.remove(priority);
@@ -498,4 +506,133 @@ function selectColor(color, id) {
 function setMinDate() {
     const today = new Date().toISOString().split("T")[0];
     document.getElementById("date").setAttribute("min", today);
+}
+
+
+//----Django-Backend----//
+
+async function setNewTaskBackend(task) {
+    const url = "http://127.0.0.1:8000/tasks/";
+    try {
+        await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(task),
+        });
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+function getNewTaskJsonBackend() {
+    return {
+        title: title,
+        description: description,
+        assignedTo: assignedTo,
+        date: date,
+        priority: priority,
+        category: category,
+        subtask: checkedSubtaskNames,
+        categoryColor: colorCode,
+        section: 'taskCategoryToDo',
+        author: '-',
+    }
+}
+
+function getIdForAssignedTo(task) {
+    let assignedArray = []
+    for (let i = 0; i < task['assignedTo'].length; i++) {
+        contactsBackend[0].forEach(contact => {
+            if (contact['name'] == task['assignedTo'][i]) {
+                assignedArray.push(contact['author']['id'])
+            }
+        });
+    }
+    task['assignedTo'] = assignedArray
+    return task
+}
+
+function getIdForUserFromURL(task) {
+    IdUser = "";
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get('name');
+    usersBackend[0].forEach(user => {
+        if (user['username'] == name) {
+            task['author'] = user['id']
+        }
+    });
+    return task
+}
+
+function convertSubtaskIdToStrings() {
+    for (let i = 0; i < tasksBackend[0].length; i++) {
+        let assignedToArray = [];
+        tasksBackend[0][i]['subtask'].forEach(assignedTo => {
+            subtasksBackend[0].forEach(subtask => {
+                if (assignedTo == subtask['id']) {
+                    if (!assignedToArray.includes(subtask['titleFromSub'])) {
+                        assignedToArray.push({
+                            titleFromSub: subtask['titleFromSub'],
+                            status: subtask['status']
+                        });
+                    }
+                }
+            });
+        });
+        tasksBackend[0][i]['subtask'] = assignedToArray;
+    }
+}
+async function createNEWTASK() {
+    title = document.getElementById('title').value;
+    description = document.getElementById('description').value;
+    date = document.getElementById('date').value;
+    if (assignedToIsSelected()) {
+        getTheAssignedNames();
+        assignedTo = assignedToNames;
+        formAssigned = true;
+    } else { formAssigned = false }
+    if (prioIsSelected()) {
+        priority = selectedPriority;
+        formPrio = true;
+    } else { formPrio = false }
+    if (categoryIsSelected()) {
+        category = document.getElementById('selectedCategory').innerHTML;
+        formCategory = true;
+    } else { formCategory = false }
+    if (checkTheSelectedSubtasks()) {
+        subtask = checkedSubtaskNames;
+    }
+    if (formAssigned && formPrio && formCategory) {
+        createTaskAndClearEverything();
+    }
+}
+
+async function setNewSubtaskBackend() {
+    const url = "http://127.0.0.1:8000/tasks/subtasks/";
+    let inputfield = document.getElementById('subtask').value;
+    if (inputfield.length <= 2) {
+        alert('Please insert a name for the new subtask')
+        return false
+    } else {
+        document.getElementById('newCreatedSubtasks').innerHTML += `
+        <label class="createdSubtask"><span>${inputfield}</span><span><input type="checkbox" checked onchange="updateSubtask()"></span></label>  `
+    }
+    let newsubtask = {
+        titleFromSub: inputfield,
+        status: "checked"
+    }
+    try {
+        await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newsubtask)
+        });
+        generatedSubtasks.push(newsubtask);
+    } catch (e) {
+        console.log(e);
+    }
 }

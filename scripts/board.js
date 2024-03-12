@@ -12,8 +12,7 @@ let hideDropDownMenu = true;
 
 let tasksBackend = [];
 let subtasksBackend = [];
-contactsBackend;
-usersBackend;
+
 
 
 async function init() {
@@ -582,6 +581,8 @@ async function getTasksBackend() {
         console.error("There was a problem with the fetch operation:", error);
     }
 }
+
+
 
 function convertAssignedToIdsToStrings() {
     for (let i = 0; i < tasksBackend[0].length; i++) {
