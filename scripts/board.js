@@ -566,6 +566,7 @@ async function getTasksBackend() {
             categoryColor: task.categoryColor,
             description: task.description,
             id: task.id,
+            date: task.date,
             assignedTo: task.assignedTo,
             priority: task.priority,
             section: task.section,
@@ -582,6 +583,26 @@ async function getTasksBackend() {
     }
 }
 
+async function updateTaskBackend(id, title, description, date, priority, assignedTo){
+    const url = `http://127.0.0.1:8000/tasks/${id}`; 
+    try {
+        await fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json", 
+            },
+            body: JSON.stringify({
+                "title": title,
+                "description": description,
+                "date": date,
+                "priority": priority,
+                "assignedTo": assignedTo
+            })
+        });
+    } catch (error) {
+        console.error('Error updating task:', error);
+    }
+}
 
 
 function convertAssignedToIdsToStrings() {

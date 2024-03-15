@@ -23,55 +23,6 @@ async function init() {
     openAssignedToSelection();
 }
 
-/**
- * Take the value from several fields and push it in the array "tasks".
- * After the task was created, some variable get resetted to value "null".
- */
-async function createNEWTASK() {
-    title = document.getElementById('title').value;
-    description = document.getElementById('description').value;
-    date = document.getElementById('date').value;
-    if (assignedToIsSelected()) {
-        getTheAssignedNames();
-        assignedTo = assignedToNames;
-        formAssigned = true;
-    } else { formAssigned = false }
-    if (prioIsSelected()) {
-        priority = selectedPriority;
-        formPrio = true;
-    } else { formPrio = false }
-    if (categoryIsSelected()) {
-        category = document.getElementById('selectedCategory').innerHTML;
-        formCategory = true;
-    } else { formCategory = false }
-    if (checkTheSelectedSubtasks()) {
-        subtask = checkedSubtaskNames;
-    }
-    if (formAssigned && formPrio && formCategory) {
-        createTaskAndClearEverything();
-    }
-}
-
-async function createTaskAndClearEverything() {
-    getCategoryColor();
-    const task = getNewTaskJsonBackend();
-    await createdTaskSuccesfull();
-    await getIdForAssignedTo(task);
-    await getIdForUserFromURL(task);
-    tasks.push(task);
-    await setNewTaskBackend(task);
-    debugger
-    //await setTask('tasks', tasks);
-    clearValues();
-    await init();
-    cancelCreateTask();
-    document.getElementById('taskCreated').style.display = 'none';
-    formCorrect = false;
-    priority = '';
-    category = '';
-    subTask = '';
-}
-
 function getNewTaskJson() {
     return {
         title: title,
@@ -584,7 +535,21 @@ function convertSubtaskIdToStrings() {
         tasksBackend[0][i]['subtask'] = assignedToArray;
     }
 }
-async function createNEWTASK() {
+
+function convertSubtaskStringToIdForBackend(task) {
+    let idArray = [];
+    debugger
+    for (let i = 0; i < subtasksBackend[0].length; i++) {
+        task['subtask'].forEach(subtask => {
+            if (subtask['titleFromSub'] == subtasksBackend[0][i]['titleFromSub']) {
+                idArray.push(subtasksBackend[0][i]['id'])
+            }
+        });
+    }  task['subtask'] = idArray;
+    return task
+}
+
+async function createNEWTaskBackend() {
     title = document.getElementById('title').value;
     description = document.getElementById('description').value;
     date = document.getElementById('date').value;
@@ -601,12 +566,45 @@ async function createNEWTASK() {
         category = document.getElementById('selectedCategory').innerHTML;
         formCategory = true;
     } else { formCategory = false }
-    if (checkTheSelectedSubtasks()) {
+    if (checkTheSelectedSubtasksBackend()) {
         subtask = checkedSubtaskNames;
     }
     if (formAssigned && formPrio && formCategory) {
         createTaskAndClearEverything();
     }
+}
+
+async function createTaskAndClearEverything() {
+    getCategoryColor();
+    const task = getNewTaskJsonBackend();
+    console.log(task);
+    await getSubtasksBackend();
+    await convertSubtaskStringToIdForBackend(task);
+    console.log(task);
+    debugger
+    await createdTaskSuccesfull();
+    await getIdForAssignedTo(task);
+    await getIdForUserFromURL(task);
+    tasks.push(task);
+    await setNewTaskBackend(task);
+    //await setTask('tasks', tasks);
+    clearValues();
+    await init();
+    cancelCreateTask();
+    document.getElementById('taskCreated').style.display = 'none';
+    formCorrect = false;
+    priority = '';
+    category = '';
+    subTask = '';
+}
+
+async function checkTheSelectedSubtasksBackend() {
+    const checkedSubtasks = generatedSubtasks.filter(subtask => subtask.status === "checked");
+    const updatedSubtasks = checkedSubtasks.map(subtask => ({
+        titleFromSub: subtask.titleFromSub,
+        status: "unchecked"
+    }));
+    await checkedSubtaskNames.push(...updatedSubtasks);
 }
 
 async function setNewSubtaskBackend() {
@@ -623,6 +621,7 @@ async function setNewSubtaskBackend() {
         titleFromSub: inputfield,
         status: "checked"
     }
+    document.getElementById('subtask').value= "";
     try {
         await fetch(url, {
             method: "POST",
@@ -632,6 +631,7 @@ async function setNewSubtaskBackend() {
             body: JSON.stringify(newsubtask)
         });
         generatedSubtasks.push(newsubtask);
+       
     } catch (e) {
         console.log(e);
     }
