@@ -12,13 +12,15 @@ let hideDropDownMenu = true;
 
 let tasksBackend = [];
 let subtasksBackend = [];
-
+let backendIdSelectedTask = 999;
 
 
 async function init() {
 
     await loadContacts();
-    await loadRemote();
+    await getContactsBackend();
+    await getSubtasksBackend();
+    await getTasksBackend();
     await setMinDate();
     await includeHTML();
     await loadCategorys();
@@ -26,9 +28,7 @@ async function init() {
     await renderTasks();
     await addNameToHref();
     await getUserBackend();
-    await getContactsBackend();
-    await getSubtasksBackend();
-    await getTasksBackend();
+
 }
 
 /**
@@ -38,8 +38,8 @@ async function init() {
  */
 function loadTasksForBoard() {
     allTasks = [];
-    for (let i = 0; i < tasks.length; i++) {
-        let task = tasks[i];
+    for (let i = 0; i < tasksBackend[0].length; i++) {
+        let task = tasksBackend[0][i];
         getAssignedShortAndColor(task, short, iconNameColor);
         let remoteTask = taskData(task, i);
         allTasks.push(remoteTask);
@@ -51,9 +51,9 @@ function loadTasksForBoard() {
 /**
  * Check every name in the array "contacts" and return the variable i which is needed for function processAssignedName().
  */
-function findIndexByName(name, contacts) {
-    for (let i = 0; i < contacts.length; i++) {
-        if (contacts[i].name === name) {
+function findIndexByName(name) {
+    for (let i = 0; i < contactsBackend[0].length; i++) {
+        if (contactsBackend[0][i].name === name) {
             return i;
         }
     }
@@ -64,9 +64,9 @@ function findIndexByName(name, contacts) {
  * If findIndexByName() returns not -1 the color and short will be pushed into the both arrays
  */
 function processAssignedName(name, short, iconNameColor, contacts) {
-    let index = findIndexByName(name, contacts);
+    let index = findIndexByName(name, contactsBackend[0]);
     if (index !== -1) {
-        short.push(contacts[index].short);
+        short.push(contactsBackend[0][index].short);
         iconNameColor.push(contacts[index].iconColor);
     }
 }
@@ -103,14 +103,13 @@ function renderCategory(categoryName, tasks) {
     let containerId = `taskCategory${categoryName}`;
     let container = document.getElementById(containerId);
     container.innerHTML = '';
-
     if (tasks.length > 0) {
         for (let i = 0; i < tasks.length; i++) {
             let task = tasks[i];
             let counter = 0;
             container.innerHTML += createdTaskHTML(task, i);
             let assignedMemberElement = document.getElementById(`createdTaskAssignedMember${task.id}`);
-            for (let m = 0; m < task.members.length; m++) {
+            for (let m = 0; m < tasksBackend[0][i]['assignedTo'].length; m++) {
                 assignedMemberElement.innerHTML += `<span class="memberIcon" style="background-color: ${task.iconColors[m]}">${task.members[m]}</span>`
             }
             document.getElementById(`rightPrio${task.id}`).innerHTML = checkPriority(task);
@@ -172,6 +171,7 @@ function checkProgressBar(task, counter) {
  * After that, from there is possible to click on "edit" to change somethin in the selected task.
  */
 function showDetailsTaskPopUp(id) {
+
     let showDetailsTaskPopUp = document.getElementById('editTaskPopUpWindowContent');
     showDetailsTaskPopUp.style.display = 'flex';
     showDetailsTaskPopUp.innerHTML = showDetailsTaskPopUpHTML(id);
@@ -186,11 +186,11 @@ function showDetailsTaskPopUp(id) {
  * Load every Name and Subtask from the selected task.
  */
 function showNamesAndSubtasks(id) {
-    for (let i = 0; i < tasks[id]['assignedTo'].length; i++) {
-        document.getElementById('editPopUpName').innerHTML += `<div><span class="iconStylePopUp"style="background-color:${allTasks[id]['iconColors'][i]}">${allTasks[id]['members'][i]}</span><span style="padding-left: 10px">${tasks[id]['assignedTo'][i]}</span</div>`;
+    for (let i = 0; i < tasksBackend[0][id]['assignedTo'].length; i++) {
+        document.getElementById('editPopUpName').innerHTML += `<div><span class="iconStylePopUp"style="background-color:${allTasks[id]['iconColors'][i]}">${allTasks[id]['members'][i]}</span><span style="padding-left: 10px">${tasksBackend[0][id]['assignedTo'][i]}</span</div>`;
     }
-    for (let l = 0; l < tasks[id]['subtask'].length; l++) {
-        document.getElementById('editPopUpList').innerHTML += `<div id="editTaskCheckboxes" onclick="changeProgressBarFromSelectedTask(${id})"><input ${tasks[id]['subtask'][l]['status']} id="editChecks${l}"type="checkbox">${tasks[id]['subtask'][l]['name']}</div>`
+    for (let l = 0; l < tasksBackend[0][id]['subtask'].length; l++) {
+        document.getElementById('editPopUpList').innerHTML += `<div id="editTaskCheckboxes" onclick="changeProgressBarFromSelectedTask(${id})"><input ${tasksBackend[0][id]['subtask'][l]['status']} id="editChecks${l}"type="checkbox">${tasksBackend[0][id]['subtask'][l]['titleFromSub']}</div>`
     }
 }
 
@@ -239,7 +239,7 @@ function renderAssignedMembers(editAssignedToNamesShorts) {
 }
 
 function loadNamesFromSelectedTask(id) {
-    for (let i = 0; i < tasks[id]['assignedTo'].length; i++) {
+    for (let i = 0; i < tasksBackend[0][id]['assignedTo'].length; i++) {
         let name = allTasks[id]['members'][i];
         let color = allTasks[id]['iconColors'][i];
         editAssignedToNamesShorts.names.push(name);
@@ -252,15 +252,15 @@ function loadNamesFromSelectedTask(id) {
  * Add the correct priority from the selected task to the popup-window.
  */
 function showDetailsPrio(id) {
-    if (tasks[id]['priority'] == 'urgent') {
+    if (tasksBackend[0][id]['priority'] == 'urgent') {
         document.getElementById('editPopUpPriority').innerHTML = '<p>urgent</p> <img src="../img/addtask-img/higPrio.png">';
         document.getElementById('editPopUpPriority').classList.add('selecturgent')
     }
-    if (tasks[id]['priority'] == 'medium') {
+    if (tasksBackend[0][id]['priority'] == 'medium') {
         document.getElementById('editPopUpPriority').innerHTML = '<p>medium</p> <img src="../img/addtask-img/mediumPrio.png">';
         document.getElementById('editPopUpPriority').classList.add('selectmedium')
     }
-    if (tasks[id]['priority'] == 'low') {
+    if (tasksBackend[0][id]['priority'] == 'low') {
         document.getElementById('editPopUpPriority').innerHTML = '<p>low</p> <img src="../img/addtask-img/lowPrio.png">';
         document.getElementById('editPopUpPriority').classList.add('selectlow')
     }
@@ -271,14 +271,14 @@ function showDetailsPrio(id) {
  * Also after every change it get saved in the remote storage.
  */
 async function changeProgressBarFromSelectedTask(id) {
-    let task = tasks[id];
+    let task = tasksBackend[0][id];
     let counter = 0;
     for (let subs = 0; subs < task.subtask.length; subs++) {
         let isChecked = document.getElementById('editChecks' + subs).checked;
         if (isChecked) {
-            tasks[id].subtask[subs].status = "checked";
+            tasksBackend[0][id].subtask[subs].status = "checked";
         } else {
-            tasks[id].subtask[subs].status = "unchecked";
+            tasksBackend[0][id].subtask[subs].status = "unchecked";
         }
     }
     counter = checkSubtaskProgress(task, counter);
@@ -286,18 +286,20 @@ async function changeProgressBarFromSelectedTask(id) {
     document.getElementById('progressBar' + id).style.width = barPercentLength;
     document.getElementById('progressCounter' + id).innerHTML = counter + `/${task['subtask'].length}`;
     counter = "";
-    await setTask('tasks', tasks);
+    await setTask('tasks', tasks); // <-----
 }
 
 /**
  * To change something in the chosen task, this window will pop up and load every current data into it.
  */
-function SelectedTaskEditWindow(id) {
+function SelectedTaskEditWindow(id, backendId) {
+    backendIdSelectedTask = backendId
+    console.log(backendIdSelectedTask);
     let content = document.getElementById('editSelectedTask');
     content.innerHTML = "";
     content.innerHTML = selectedTaskHTML(id);
-    selectedPriority = tasks[id]['priority'];
-    document.getElementById('editSelect' + tasks[id]['priority']).classList.add('select' + tasks[id]['priority']);
+    selectedPriority = tasksBackend[0][id]['priority'];
+    document.getElementById('editSelect' + tasksBackend[0][id]['priority']).classList.add('select' + tasksBackend[0][id]['priority']);
     editopenAssignedToSelection();
     editCheckSelectedContacts(id);
     loadNamesFromSelectedTask(id);
@@ -314,7 +316,7 @@ function editopenAssignedToSelection() {
     let assignedToSelectionBox = document.getElementById('editAssignedToSelection');
     assignedToSelectionBox.innerHTML = editassignedToBoxHTML();
     assignedToSelectionBox.innerHTML += `<label onclick="doNotCloseTheBoxOrReloadThePage(event)" id="editAssignedlabel" class="d-none" ><div id="editAssignedName0" >Myself</div><span><input id="editCheckboxAssignedTo0" type="checkbox"></span></label>`
-    contacts.forEach((contact, index) => {
+    contactsBackend[0].forEach((contact, index) => {
         assignedToSelectionBox.innerHTML += editGetContactsFromContactListHTML(contact, index);
     })
     editToggleVisability();
@@ -328,7 +330,7 @@ function editassignedToBoxHTML() {
 function editToggleVisability() {
     document.getElementById('editAssignedlabel').classList.toggle('d-none');
     document.getElementById('assginedMembersEditTask').classList.toggle('d-none');
-    contacts.forEach((contact, index) => {
+    contactsBackend[0].forEach((contact, index) => {
         document.getElementById('editAssignedlabel' + index).classList.toggle('d-none');
     });
 }
@@ -370,12 +372,12 @@ function editHighlightPriority(prio) {
  * Iterate through the chosen tasks selected contacts. If the contact is in the array it will check the boxes, when the window get opened.
  */
 function editCheckSelectedContacts(id) {
-    if (tasks[id]['assignedTo'][0] == "Myself") {
+    if (tasksBackend[0][id]['assignedTo'][0] == "Myself") {
         document.getElementById('editCheckboxAssignedTo0').checked = true;
     }
-    for (let checked = 0; checked < tasks[id]['assignedTo'].length; checked++) {
-        for (let checkTheNames = 0; checkTheNames < contacts.length + 1; checkTheNames++) {
-            if (tasks[id]['assignedTo'][checked] == document.getElementById('editAssignedName' + checkTheNames).innerHTML) {
+    for (let checked = 0; checked < tasksBackend[0][id]['assignedTo'].length; checked++) {
+        for (let checkTheNames = 0; checkTheNames < contactsBackend[0].length + 1; checkTheNames++) {
+            if (tasksBackend[0][id]['assignedTo'][checked] == document.getElementById('editAssignedName' + checkTheNames).innerHTML) {
                 document.getElementById('editCheckboxAssignedTo' + checkTheNames).checked = true;
             }
         }
@@ -395,10 +397,10 @@ async function saveChangesInTask(id) {
     }
     await editGetTheAssignedNames();
     assignedTo = assignedToNames;
-    await updateTaskDetails(id, title, description, date, priority, assignedTo);
+    await updateTaskBackend(title, description, date, priority, assignedTo);
     closeSelectedTaskEditWindow();
     await loadTasksForBoard();
-    await renderTasks();
+    await init();
 }
 
 /**
@@ -423,7 +425,7 @@ function editGetTheAssignedNames() {
 function searchTask() {
     const input = document.getElementById("input").value;
     searchTaskArray = [];
-    for (let i = 0; i < tasks.length; i++) {
+    for (let i = 0; i < tasksBackend[0].length; i++) {
         const task = allTasks[i];
         if (
             task.title.toLowerCase().includes(input.toLowerCase()) ||
@@ -466,7 +468,7 @@ function startDragging(id) {
 async function dragToOtherCategory(section) {
     allTasks[currentDraggedElement]['section'] = section;
     tasks[currentDraggedElement]['section'] = section;
-    let selectedTask = tasks[currentDraggedElement]['section']
+    let selectedTask = tasksBackend[0][currentDraggedElement]['section']
     document.getElementById(selectedTask).classList.remove('drag-area-highlight');
     await setTask('tasks', tasks);
     renderTasks();
@@ -583,13 +585,14 @@ async function getTasksBackend() {
     }
 }
 
-async function updateTaskBackend(id, title, description, date, priority, assignedTo){
-    const url = `http://127.0.0.1:8000/tasks/${id}`; 
+async function updateTaskBackend(title, description, date, priority, assignedTo) {
+    assignedTo = await convertAssignedToStringsToIDs(assignedTo);
+    const url = `http://127.0.0.1:8000/tasks/${backendIdSelectedTask}/`;
     try {
         await fetch(url, {
             method: "PATCH",
             headers: {
-                "Content-Type": "application/json", 
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 "title": title,
@@ -602,6 +605,20 @@ async function updateTaskBackend(id, title, description, date, priority, assigne
     } catch (error) {
         console.error('Error updating task:', error);
     }
+}
+
+async function convertAssignedToStringsToIDs(assignedTo) { 
+    let idArray = [];
+    assignedTo.forEach(string => {
+        contactsBackend[0].forEach(contact => {
+            if (string == contact['author']['name']) {
+                if (!idArray.includes(contact['author']['id'])) {
+                    idArray.push(contact['author']['id'])
+                }
+            }
+        });
+    });
+    return idArray;
 }
 
 

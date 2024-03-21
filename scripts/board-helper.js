@@ -52,15 +52,15 @@ function createdTaskHTML(task, i) {
 function showDetailsTaskPopUpHTML(id) {
     return `
 <div class="editPopUpWindow" onclick="doNotCloseWhenClickedInsightContainer(event)">
-    <div class="editPopUpCatAndCanc"><span style="background-color:#${tasks[id]['categoryColor']}" class="editPopUpCategory"">${tasks[id]['category']}</span>
+    <div class="editPopUpCatAndCanc"><span style="background-color:#${tasksBackend[0][id]['categoryColor']}" class="editPopUpCategory"">${tasksBackend[0][id]['category']}</span>
         <span onclick="closeEditTaskPopUp()"><img src="../img/cancelIcon.png"></span>
     </div>
     <div>
-        <div class="editPopUpTitle">${tasks[id]['title']}</div>
-        <div class="editPopUpText">${tasks[id]['description']}</div>
+        <div class="editPopUpTitle">${tasksBackend[0][id]['title']}</div>
+        <div class="editPopUpText">${tasksBackend[0][id]['description']}</div>
     </div>
-    <div> <b> Due Date: </b>${tasks[id]['date']}</div>
-    <div style="display: flex; align-items: center; gap: 10px"> <b> Priority: </b> <span id="editPopUpPriority">${tasks[id]['priority']} <img
+    <div> <b> Due Date: </b>${tasksBackend[0][id]['date']}</div>
+    <div style="display: flex; align-items: center; gap: 10px"> <b> Priority: </b> <span id="editPopUpPriority">${tasksBackend[0][id]['priority']} <img
                 src="../img/addtask-img/mediumPrio.png"></span></div>
     <div>
         <div><b>Assigned To</b></div>
@@ -76,7 +76,7 @@ function showDetailsTaskPopUpHTML(id) {
     <div class="editPopUpDelAndEditButton">
         <span onclick="showTaskDelete()"><img src="../img/board-img/editPopUpdelete.png"> Delete </span>
         <seperator></seperator>
-        <span onclick="SelectedTaskEditWindow(${id}); closeEditTaskPopUp()" class="popUpEdit"><imgactShort
+        <span onclick="SelectedTaskEditWindow(${id},${tasksBackend[0][id]['id']}); closeEditTaskPopUp()" class="popUpEdit"><imgactShort
                 src="../img/board-img/editPopUpEdit.png"> Edit
         </span>
     </div>
@@ -91,11 +91,11 @@ function selectedTaskHTML(id) {
     <form onclick="hideAssignedToDropDownMenu()">
     <img onclick="closeSelectedTaskEditWindow()" class="closeSelectedTaskEdit" src="../img/cancelIcon.png">
     <p class="editTaskTitles">Title</p>
-    <input required id="editTaskTitle" placeholder="Enter a title....." value="${tasks[id]['title']}">
+    <input required id="editTaskTitle" placeholder="Enter a title....." value="${tasksBackend[0][id]['title']}">
     <p class="editTaskTitles">Description</p>
-    <textarea required id="editTaskDescription" placeholder="Describe your task.....">${tasks[id]['description']}</textarea>
+    <textarea required id="editTaskDescription" placeholder="Describe your task.....">${tasksBackend[0][id]['description']}</textarea>
     <p class="editTaskTitles">Due Date</p>
-    <input id="editTaskDate" type="date" placeholder="dd.mm.yyyy" value="${tasks[id]['date']}">
+    <input id="editTaskDate" type="date" placeholder="dd.mm.yyyy" value="${tasksBackend[0][id]['date']}">
     <p class="editTaskTitles">Prio</p>
     <div class="priorities" id="editPriorities">
     <span id="editSelecturgent" onclick="editHighlightPriority('urgent')">

@@ -315,7 +315,7 @@ function getCreatedCategorysHTML(id, category) {
 function openAssignedToSelection() {
     let assignedToSelectionBox = document.getElementById('assignedToSelection');
     assignedToSelectionBox.innerHTML = assignedToBoxHTML();
-    assignedToSelectionBox.innerHTML += `<label onclick="doNotCloseTheBoxOrReloadThePage(event)" id="assignedlabel" class="d-none" ><div id="assignedName0" >Myself</div><span><input id="checkboxAssignedTo0" type="checkbox"></span></label>`
+    //assignedToSelectionBox.innerHTML += `<label onclick="doNotCloseTheBoxOrReloadThePage(event)" id="assignedlabel" class="d-none" ><div id="assignedName0" >Myself</div><span><input id="checkboxAssignedTo0" type="checkbox"></span></label>`
     contactsBackend[0].forEach((contact, index) => {
         assignedToSelectionBox.innerHTML += getContactsFromContactListHTML(contact, index);
     })
@@ -335,7 +335,7 @@ function editGetContactsFromContactListHTML(contact, index) {
 }
 
 function toggleVisability() {
-    document.getElementById('assignedlabel').classList.toggle('d-none');
+    ///document.getElementById('assignedlabel').classList.toggle('d-none');
     document.getElementById('assginedMembersCreateTask').classList.toggle('d-none');
     contactsBackend[0].forEach((contact, index) => {
         document.getElementById('assignedlabel' + index).classList.toggle('d-none');
@@ -368,10 +368,10 @@ function createArrayForIcons(selected, editAssignedToNamesShorts) {
         editAssignedToNamesShorts.names.push('M');
         editAssignedToNamesShorts.colors.push('#04B404');
     } else {
-        for (let index = 0; index < contacts.length; index++) {
-            let contactName = contacts[index]['name'];
-            let contactColor = contacts[index]['iconColor'];
-            let contactShort = contacts[index]['short'];
+        for (let index = 0; index < contactsBackend[0].length; index++) {
+            let contactName = contactsBackend[0][index]['name'];
+            let contactColor = contactsBackend[0][index]['iconColor'];
+            let contactShort = contactsBackend[0][index]['short'];
             if (selected.textContent == contactName) {
                 editAssignedToNamesShorts.names.push(contactShort);
                 editAssignedToNamesShorts.colors.push(contactColor);
