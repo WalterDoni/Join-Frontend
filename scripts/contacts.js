@@ -106,11 +106,11 @@ function calculateNameDetails(name) {
  * This will delete the selected contact from the array contacts.
  */
 async function deleteContact(i) {
-  contacts.splice(i, 1);
-  await setItem("contacts", JSON.stringify(contacts));
+   await deleteContactBackend(i);
   await updateClasses();
   checkSizeForContactContainer();
 }
+
 
 async function updateClasses() {
   let newContact = document.getElementById("newContact");
@@ -379,6 +379,20 @@ async function updateContactBackend(name, email, phone, short) {
   }
 }
 
+async function deleteContactBackend(id){
+  const url = `http://127.0.0.1:8000/contacts/delete/${id}/`;
+  try {
+      await fetch(url , {
+          method: "DELETE",
+          headers: {
+              "Content-Type": "application/json",
+          }
+      });
+  } catch (error) {
+      console.error('Error:', error);
+  }
+}
+
 function getIdContact(name) {
   id = "";
   contactsBackend[0].forEach(contact => {
@@ -449,7 +463,7 @@ function showContactDetailsHtml(contact, i) {
                       </div>
                   </div>
 
-                  <img  onclick="deleteContact(${i})" src="../img/deleteButtonResponsive.png" id="responsiveDelete" class="responsiveButtons respButtDel d-none">
+                  <img  onclick="deleteContact(${contactsBackend[0][i]["author"]["id"]})" src="../img/deleteButtonResponsive.png" id="responsiveDelete" class="responsiveButtons respButtDel d-none">
                   <img onclick="editContact(${i})"src="../img/editButtonResponsive.png"  id="responsiveEdit" class="responsiveButtons respButtEdit d-none">
                   <img  onclick="responsiveContactDetailsBackButton()" src="../img/backArrowResponsive.png" id="backArrowResponsive" class="responsiveBackArrowButton d-none">
               </div>`;
@@ -510,7 +524,7 @@ function editContactHtml(i) {
 
             </form>
             <div class="buttonContainer">
-            <button class="cancelButton" onclick="deleteContact(${i})">Delete</button>
+            <button class="cancelButton" onclick="deleteContact(${contactsBackend[0][i]["author"]["id"]})">Delete</button>
             <button class="createButton" onclick="saveContactChanges(${i})">Save</button>
             </div>
         </span>
