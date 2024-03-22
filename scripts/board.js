@@ -466,12 +466,9 @@ function startDragging(id) {
 }
 
 async function dragToOtherCategory(section) {
-    allTasks[currentDraggedElement]['section'] = section;
-    tasks[currentDraggedElement]['section'] = section;
-    let selectedTask = tasksBackend[0][currentDraggedElement]['section']
-    document.getElementById(selectedTask).classList.remove('drag-area-highlight');
-    await setTask('tasks', tasks);
-    renderTasks();
+    document.getElementById(section).classList.remove('drag-area-highlight');
+    await updateTaskBackendCategory(section, currentDraggedElement)
+    init();
 }
 
 //----Helpfunctions---//
@@ -512,11 +509,10 @@ function closeTaskDelete() {
 
 async function deleteSelectedTask(id) {
     document.getElementById('taskDelete').style.display = "none";
-    tasks.splice(id, 1);
-    allTasks.splice(id, 1);
-    await setTask('tasks', tasks);
-    renderTasks();
+    await deleteTaskBackend(id)
     closeEditTaskPopUp();
+    init();
+    
 }
 
 
@@ -606,6 +602,39 @@ async function updateTaskBackend(title, description, date, priority, assignedTo)
         console.error('Error updating task:', error);
     }
 }
+
+async function updateTaskBackendCategory(section, currentDraggedElement) {
+    let id = tasksBackend[0][currentDraggedElement]['id']
+    const url = `http://127.0.0.1:8000/tasks/${id}/`;
+    try {
+        await fetch(url, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+               "section":section,
+            })
+        });
+    } catch (error) {
+        console.error('Error updating task:', error);
+    }
+}
+
+async function deleteTaskBackend(id){
+    const url = `http://127.0.0.1:8000/tasks/delete/${id}/`;
+    try {
+        await fetch(url , {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 
 async function convertAssignedToStringsToIDs(assignedTo) { 
     let idArray = [];

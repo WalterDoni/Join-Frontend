@@ -81,7 +81,7 @@ function showDetailsTaskPopUpHTML(id) {
         </span>
     </div>
 </div>
-<div id="taskDelete"><div><p>Are you sure?</p><div><button onclick="deleteSelectedTask(${id})">Yes!</button><button onclick="closeTaskDelete()">No!</button></div></div></div>
+<div id="taskDelete"><div><p>Are you sure?</p><div><button onclick="deleteSelectedTask(${tasksBackend[0][id]['id']})">Yes!</button><button onclick="closeTaskDelete()">No!</button></div></div></div>
 `
 
 }

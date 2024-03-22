@@ -538,7 +538,6 @@ function convertSubtaskIdToStrings() {
 
 function convertSubtaskStringToIdForBackend(task) {
     let idArray = [];
-    debugger
     for (let i = 0; i < subtasksBackend[0].length; i++) {
         task['subtask'].forEach(subtask => {
             if (subtask['titleFromSub'] == subtasksBackend[0][i]['titleFromSub']) {
@@ -577,17 +576,13 @@ async function createNEWTaskBackend() {
 async function createTaskAndClearEverything() {
     getCategoryColor();
     const task = getNewTaskJsonBackend();
-    console.log(task);
     await getSubtasksBackend();
     await convertSubtaskStringToIdForBackend(task);
-    console.log(task);
-    debugger
     await createdTaskSuccesfull();
     await getIdForAssignedTo(task);
     await getIdForUserFromURL(task);
     tasks.push(task);
     await setNewTaskBackend(task);
-    //await setTask('tasks', tasks);
     clearValues();
     await init();
     cancelCreateTask();
