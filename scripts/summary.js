@@ -4,7 +4,7 @@ let userName;
  */
 async function initSummary() {
     await includeHTML();
-    await loadRemote();
+    await getTasksBackend();
     await tasksForSummary();
     await urgentTask();
     getTimeandGreets();
@@ -18,11 +18,11 @@ function clearUsers(){
  * Count the tasks.
  */
 async function tasksForSummary() {
-    let countTodo = tasks.filter(task => task.section === 'taskCategoryToDo').length;
-    let countProgress = tasks.filter(task => task.section === 'taskCategoryInProgress').length;
-    let countFeedback = tasks.filter(task => task.section === 'taskCategoryAwaitFeedback').length;
-    let countDone = tasks.filter(task => task.section === 'taskCategoryDone').length;
-    document.getElementById('amountBoard').innerHTML = tasks.length;
+    let countTodo = tasksBackend[0].filter(task => task.section === 'taskCategoryToDo').length;
+    let countProgress = tasksBackend[0].filter(task => task.section === 'taskCategoryInProgress').length;
+    let countFeedback = tasksBackend[0].filter(task => task.section === 'taskCategoryAwaitFeedback').length;
+    let countDone = tasksBackend[0].filter(task => task.section === 'taskCategoryDone').length;
+    document.getElementById('amountBoard').innerHTML = tasksBackend[0].length;
     document.getElementById('amountTodo').innerHTML = countTodo;
     document.getElementById('amountProgress').innerHTML = countProgress;
     document.getElementById('amountFeedback').innerHTML = countFeedback;
@@ -33,9 +33,9 @@ async function tasksForSummary() {
  * Filter the urgent tasks and displays the next deadline due.
  */
 async function urgentTask() {
-    let countUrgentTasks = tasks.filter(task => task.priority === 'urgent').length;
+    let countUrgentTasks = tasksBackend[0].filter(task => task.priority === 'urgent').length;
     document.getElementById('amountUrgent').innerHTML = countUrgentTasks;
-    let urgentTasks = tasks.filter(task => task.priority === 'urgent' && task.date);
+    let urgentTasks = tasksBackend[0].filter(task => task.priority === 'urgent' && task.date);
     urgentTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     if (urgentTasks.length > 0) {
         let nextDueDate = new Date(urgentTasks[0].date);
