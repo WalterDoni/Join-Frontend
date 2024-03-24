@@ -213,36 +213,27 @@ async function getUserBackend() {
       },
     });
     const data = await response.json();
-    const formattedData = data.map((user) => ({
-      email: user.email,
-      username: user.username,
-      id: user.id
-    }));
-    usersBackend.push(formattedData);
+    usersBackend.push(data.map(({ email, username, id }) => ({ email, username, id })));
     return data;
   } catch (error) {
-    console.error("There was a problem with the fetch operation:", error);
+    console.error("Es gab ein Problem mit der Abrufoperation:", error);
     throw error;
   }
 }
 
 async function loginAsGuest() {
   const url = `http://127.0.0.1:8000/login/`;
-  try {
-    await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: "Gast",
-        password: "Gast1234",
-      }),
-    });
-    window.location.href = "./html/summary.html?name=Gast";
-  } catch (error) {
-    console.error("There was an error!", error);
-  }
+  await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username: "Gast",
+      password: "Gast1234",
+    }),
+  });
+  window.location.href = "./html/summary.html?name=Gast";
 }
 
 async function loginAsUser() {
@@ -277,7 +268,6 @@ function getUsername(selectedname) {
 
 async function signUpNewUser() {
   const url = `http://127.0.0.1:8000/signup/`;
-  debugger;
   if (checkIfEmailExistAllready(emailLogin.value)) {
     alert("Email address allready exist!");
     return false;
@@ -296,11 +286,10 @@ async function signUpNewUser() {
     });
     resetForm();
     displayRegistrationSuccess();
-
     setTimeout(() => {
       window.location.href = "../index.html";
     }, 1500);
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.error("There was an error!", error);
   }
 }
