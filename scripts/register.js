@@ -237,11 +237,11 @@ async function loginAsGuest() {
 }
 
 async function loginAsUser() {
-  const selectedname = "";
+  const selectedname = ""; 
   const url = `http://127.0.0.1:8000/login/`;
   const user = getUsername(selectedname);
   try {
-    await fetch(url, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -251,11 +251,18 @@ async function loginAsUser() {
         password: passwordLogin.value,
       }),
     });
-    window.location.href = `./html/summary.html?name=${user}`;
+
+    if (response.ok || response.status == 200) {
+      window.location.href = `./html/summary.html?name=${user}`;
+    } else {
+     alert("Sorry, no user found with that combination.");
+    }
   } catch (error) {
-    console.error("There was an error!", error);
+    alert("Sorry, no user found with that combination.", error);
+   
   }
 }
+
 
 function getUsername(selectedname) {
   usersBackend[0].forEach((user) => {
@@ -267,11 +274,59 @@ function getUsername(selectedname) {
 }
 
 async function signUpNewUser() {
+  const email = emailLogin.value; // Speichere die E-Mail-Adresse für den späteren Gebrauch
   const url = `http://127.0.0.1:8000/signup/`;
-  if (checkIfEmailExistAllready(emailLogin.value)) {
-    alert("Email address allready exist!");
+
+  if (checkIfEmailExistAllready(email)) {
+    alert("Email address already exists!");
     return false;
   }
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username.value,
+        email: email,
+        password: password.value,
+      }),
+    });
+
+    if (response.ok || response.status === 200) {
+      await getUserBackend();
+      const id = await getUserId(email);
+      if (id !== null) {
+        displayRegistrationSuccess();
+        await createMyselfForNewUser(id);
+        resetForm();
+        setTimeout(() => {
+          window.location.href = "../index.html";
+        }, 1500);
+      } else {
+        console.error("User ID not found.");
+      }
+    }
+  } catch (error) {
+    console.error("There was an error!", error);
+  }
+}
+
+
+async function getUserId(email) {
+  for (const user of usersBackend[1]) {
+    if (user.email == email) {
+      return user.id;
+    }
+  }
+
+  return null;
+}
+
+async function createMyselfForNewUser(id) {
+  const url = "http://127.0.0.1:8000/contacts/";
   try {
     await fetch(url, {
       method: "POST",
@@ -279,17 +334,16 @@ async function signUpNewUser() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username: username.value,
-        email: emailLogin.value,
-        password: password.value,
+        "name": "Myself",
+        "email": "myself@myself.at",
+        "phonennumber": "0123456",
+        "short": "M",
+        "iconColor": "#FF7A00",
+        "author": id
       }),
     });
-    resetForm();
-    displayRegistrationSuccess();
-    setTimeout(() => {
-      window.location.href = "../index.html";
-    }, 1500);
-  } catch (error) {
-    console.error("There was an error!", error);
+  } catch (e) {
+    console.log(e);
   }
+
 }

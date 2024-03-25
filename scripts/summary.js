@@ -4,6 +4,8 @@ let userName;
  */
 async function initSummary() {
     await includeHTML();
+    await getSubtasksBackend();
+    await getContactsBackend();
     await getTasksBackend();
     await tasksForSummary();
     await urgentTask();

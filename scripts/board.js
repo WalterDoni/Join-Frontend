@@ -294,7 +294,6 @@ async function changeProgressBarFromSelectedTask(id) {
  */
 function SelectedTaskEditWindow(id, backendId) {
     backendIdSelectedTask = backendId
-    console.log(backendIdSelectedTask);
     let content = document.getElementById('editSelectedTask');
     content.innerHTML = "";
     content.innerHTML = selectedTaskHTML(id);

@@ -395,12 +395,6 @@ function doNotCloseTheBoxOrReloadThePage(event) {
 
 function hideAssignedToDropMenu() {
     let dropdown = document.getElementById('assignedlabel');
-    let includesDnone = dropdown.classList.contains('d-none');
-    if (!includesDnone) {
-        hideDropMenu = true;
-    } else {
-        hideDropMenu = false;
-    }
     if (hideDropMenu) {
         document.getElementById('assignedlabel').classList.add('d-none');
         document.getElementById('assginedMembersCreateTask').classList.remove('d-none');
@@ -591,6 +585,10 @@ async function createTaskAndClearEverything() {
     priority = '';
     category = '';
     subTask = '';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const userName = urlParams.get("name");
+    window.location.href = `./board.html?name=${userName}`;
 }
 
 async function checkTheSelectedSubtasksBackend() {
