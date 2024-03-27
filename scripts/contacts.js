@@ -300,6 +300,7 @@ async function getUserBackend() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
       },
     });
     const data = await response.json();
@@ -324,6 +325,7 @@ async function getContactsBackend() {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
       },
     });
     const data = await response.json();

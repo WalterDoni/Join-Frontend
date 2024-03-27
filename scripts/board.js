@@ -531,7 +531,8 @@ async function getSubtasksBackend() {
         const response = await fetch(url, {
             method: "GET",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": "Token" + localStorage.getItem('loggedInUserToken'),
             }
         });
         const data = await response.json();
@@ -555,6 +556,7 @@ async function getTasksBackend() {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
             },
         });
         const data = await response.json();
@@ -610,6 +612,7 @@ async function updateTaskBackendCategory(section, currentDraggedElement) {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
+
             },
             body: JSON.stringify({
                "section":section,

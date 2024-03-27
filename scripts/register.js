@@ -2,6 +2,7 @@ let usersBackend = [];
 let email;
 let user;
 
+
 /**
  * Initializes the startup process by loading the user data.
  */
@@ -223,7 +224,7 @@ async function getUserBackend() {
 
 async function loginAsGuest() {
   const url = `http://127.0.0.1:8000/login/`;
-  await fetch(url, {
+  const response =  await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -233,26 +234,35 @@ async function loginAsGuest() {
       password: "Gast1234",
     }),
   });
+  const data = await response.json();
+  const token = data.token;
+  localStorage.setItem('loggedInUserToken', token);
   window.location.href = "./html/summary.html?name=Gast";
+
 }
 
 async function loginAsUser() {
   const selectedname = ""; 
   const url = `http://127.0.0.1:8000/login/`;
   const user = getUsername(selectedname);
+
   try {
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+   
       },
       body: JSON.stringify({
         username: user,
         password: passwordLogin.value,
       }),
     });
-
+    
     if (response.ok || response.status == 200) {
+      const data = await response.json();
+      const token = data.token;
+      localStorage.setItem('loggedInUserToken', token);
       window.location.href = `./html/summary.html?name=${user}`;
     } else {
      alert("Sorry, no user found with that combination.");
