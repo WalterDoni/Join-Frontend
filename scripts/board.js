@@ -110,7 +110,10 @@ function renderCategory(categoryName, tasks) {
             container.innerHTML += createdTaskHTML(task, i);
             let assignedMemberElement = document.getElementById(`createdTaskAssignedMember${task.id}`);
             for (let m = 0; m < tasksBackend[0][i]['assignedTo'].length; m++) {
-                assignedMemberElement.innerHTML += `<span class="memberIcon" style="background-color: ${task.iconColors[m]}">${task.members[m]}</span>`
+                contactsBackend[0].forEach(contact => {
+                    if (contact.name == tasksBackend[0][i]['assignedTo'][m])
+                        assignedMemberElement.innerHTML += `<span class="memberIcon" style="background-color: ${contact.iconColor}">${contact.short}</span>`
+                });
             }
             document.getElementById(`rightPrio${task.id}`).innerHTML = checkPriority(task);
             counter = checkSubtaskProgress(task, counter);

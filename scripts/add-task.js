@@ -396,7 +396,6 @@ function doNotCloseTheBoxOrReloadThePage(event) {
 function hideAssignedToDropMenu() {
     let dropdown = document.getElementById('assignedlabel');
     if (hideDropMenu) {
-        document.getElementById('assignedlabel').classList.add('d-none');
         document.getElementById('assginedMembersCreateTask').classList.remove('d-none');
         contactsBackend[0].forEach((contact, index) => {
             document.getElementById('assignedlabel' + index).classList.add('d-none');
@@ -463,6 +462,7 @@ async function setNewTaskBackend(task) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
             },
             body: JSON.stringify(task),
         });
@@ -620,6 +620,7 @@ async function setNewSubtaskBackend() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
             },
             body: JSON.stringify(newsubtask)
         });
