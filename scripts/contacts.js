@@ -247,7 +247,7 @@ function getIdUserFromURL() {
 //----Django-Backend-Functions----//
 
 async function getUserBackend() {
-  const url = "http://127.0.0.1:8000/login/";
+  const url = "http://127.0.0.1:8000/users/";
   try {
     const response = await fetch(url, {
       method: "GET",
@@ -322,6 +322,7 @@ async function updateContactBackend(name, email, phone, short) {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
       },
       body: JSON.stringify({
         "name": name,
@@ -342,6 +343,7 @@ async function deleteContactBackend(id){
           method: "DELETE",
           headers: {
               "Content-Type": "application/json",
+              "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
           }
       });
   } catch (error) {

@@ -198,22 +198,20 @@ function checkIfEmailExistAllready(emailLogin) {
   return usersBackend[0].some(user => user.email === emailLogin);
 }
 
-
-
-
-
 //----Django-Backend-Functions----//
 
 async function getUserBackend() {
-  const url = "http://127.0.0.1:8000/login/";
+  const url = "http://127.0.0.1:8000/users/";
   try {
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
       },
     });
     const data = await response.json();
+    debugger
     usersBackend.push(data.map(({ email, username, id }) => ({ email, username, id })));
     return data;
   } catch (error) {
@@ -238,14 +236,12 @@ async function loginAsGuest() {
   const token = data.token;
   localStorage.setItem('loggedInUserToken', token);
   window.location.href = "./html/summary.html?name=Gast";
-
 }
 
 async function loginAsUser() {
   const selectedname = ""; 
   const url = `http://127.0.0.1:8000/login/`;
-  const user = getUsername(selectedname);
-
+ 
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -254,7 +250,7 @@ async function loginAsUser() {
    
       },
       body: JSON.stringify({
-        username: user,
+        username: emailLogin.value,
         password: passwordLogin.value,
       }),
     });
@@ -273,18 +269,8 @@ async function loginAsUser() {
   }
 }
 
-
-function getUsername(selectedname) {
-  usersBackend[0].forEach((user) => {
-    if (user["email"] == emailLogin.value) {
-      selectedname = user["username"];
-    }
-  });
-  return selectedname;
-}
-
 async function signUpNewUser() {
-  const email = emailLogin.value; // Speichere die E-Mail-Adresse für den späteren Gebrauch
+  const email = emailLogin.value; 
   const url = `http://127.0.0.1:8000/signup/`;
 
   if (checkIfEmailExistAllready(email)) {
@@ -306,6 +292,9 @@ async function signUpNewUser() {
     });
 
     if (response.ok || response.status === 200) {
+      const data = await response.json();
+      const token = data.token;
+      localStorage.setItem('loggedInUserToken', token);
       await getUserBackend();
       const id = await getUserId(email);
       if (id !== null) {
@@ -342,6 +331,7 @@ async function createMyselfForNewUser(id) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
       },
       body: JSON.stringify({
         "name": "Myself",

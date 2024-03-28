@@ -14,7 +14,7 @@
     <script src="./scripts/register.js"></script>
 </head>
 
-<body onload="logo(),getUserBackend(); return false">
+<body onload="logo(); return false">
     <div id="logo-container">
         <img src="./img/logo_Join_white.png" id="join-logo">
     </div>
@@ -32,14 +32,10 @@
                 </div>
                 <h1>Log in</h1>
                 <hr>
-                <input class="input-field" placeholder="Email" type="email" id="emailLogin" required>
+                <input class="input-field" placeholder="Username" type="text"  id="emailLogin" required>
                 <input class="input-field" placeholder="Password" type="password" id="passwordLogin" required>
                 <div class="login-settings">
-                    <label class="remember-me">
-                        <input id="checkbox" type="checkbox" onclick="rememberLogin()">
-                        <p>Remember me</p>
-                        <span id="checkmark" class="checkmark"></span>
-                    </label>
+            
                     <a href="./html/forgot-password.html" id="forget-password">Forgot my password</a>
                 </div>
                 <div class="login-btns">

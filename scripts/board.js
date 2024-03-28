@@ -348,9 +348,6 @@ function hideAssignedToDropDownMenu() {
     if (hideDropDownMenu) {
         document.getElementById('editAssignedlabel').classList.add('d-none');
         document.getElementById('assginedMembersEditTask').classList.remove('d-none');
-        contacts.forEach((contact, index) => {
-            document.getElementById('editAssignedlabel' + index).classList.add('d-none');
-        });
         checkboxChanges();
     }
 }
@@ -593,6 +590,7 @@ async function updateTaskBackend(title, description, date, priority, assignedTo)
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
             },
             body: JSON.stringify({
                 "title": title,
@@ -615,7 +613,7 @@ async function updateTaskBackendCategory(section, currentDraggedElement) {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
-
+                "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
             },
             body: JSON.stringify({
                "section":section,
@@ -633,6 +631,7 @@ async function deleteTaskBackend(id){
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": "Token " + localStorage.getItem('loggedInUserToken'),
             }
         });
     } catch (error) {

@@ -397,9 +397,6 @@ function hideAssignedToDropMenu() {
     let dropdown = document.getElementById('assignedlabel');
     if (hideDropMenu) {
         document.getElementById('assginedMembersCreateTask').classList.remove('d-none');
-        contactsBackend[0].forEach((contact, index) => {
-            document.getElementById('assignedlabel' + index).classList.add('d-none');
-        });
         checkboxChangesNewTask();
     }
 }
