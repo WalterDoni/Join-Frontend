@@ -211,7 +211,6 @@ async function getUserBackend() {
       },
     });
     const data = await response.json();
-    debugger
     usersBackend.push(data.map(({ email, username, id }) => ({ email, username, id })));
     return data;
   } catch (error) {
@@ -222,7 +221,7 @@ async function getUserBackend() {
 
 async function loginAsGuest() {
   const url = `http://127.0.0.1:8000/login/`;
-  const response =  await fetch(url, {
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -239,45 +238,39 @@ async function loginAsGuest() {
 }
 
 async function loginAsUser() {
-  const selectedname = ""; 
+  const selectedname = "";
   const url = `http://127.0.0.1:8000/login/`;
- 
+
   try {
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-   
+
       },
       body: JSON.stringify({
         username: emailLogin.value,
         password: passwordLogin.value,
       }),
     });
-    
+
     if (response.ok || response.status == 200) {
       const data = await response.json();
       const token = data.token;
       localStorage.setItem('loggedInUserToken', token);
-      window.location.href = `./html/summary.html?name=${user}`;
+      window.location.href = `./html/summary.html?name=${emailLogin.value}`;
     } else {
-     alert("Sorry, no user found with that combination.");
+      alert("Sorry, no user found with that combination.");
     }
   } catch (error) {
     alert("Sorry, no user found with that combination.", error);
-   
+
   }
 }
 
 async function signUpNewUser() {
-  const email = emailLogin.value; 
+  const email = emailLogin.value;
   const url = `http://127.0.0.1:8000/signup/`;
-
-  if (checkIfEmailExistAllready(email)) {
-    alert("Email address already exists!");
-    return false;
-  }
-
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -308,14 +301,14 @@ async function signUpNewUser() {
         console.error("User ID not found.");
       }
     }
-  } catch (error) {
-    console.error("There was an error!", error);
+  } catch {
+    alert("User allready exist!")
   }
 }
 
 
 async function getUserId(email) {
-  for (const user of usersBackend[1]) {
+  for (const user of usersBackend[0]) {
     if (user.email == email) {
       return user.id;
     }
